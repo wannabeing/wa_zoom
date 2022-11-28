@@ -5,10 +5,26 @@ html(lang="en")
         meta(http-equiv="X-UA-Compatible", content="IE=edge")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         link(rel="stylesheet", href="https://unpkg.com/mvp.css@1.12/mvp.css")
-        script(src="/static/js/index.js")
+        style.
+            #editBtn {
+                display: none;
+            }
+            #chatForm {
+                display: none;
+            }
+        
         title WA_ZOOM
     body
         header  
             h1 WA_ZOOM
         main
-            button hi
+            div 
+                ul#chatList
+            form#nameForm(action="", method="get") 
+                input#nameInput(type="text", name="nameInput")
+                button#nameBtn 닉네임 설정
+                button#editBtn 닉네임 수정
+            form#chatForm(action="", method="get", sty) 
+                input#chatInput(type="text", name="chatInput")
+                button 채팅 입력
+    script(src="/static/js/index.js")

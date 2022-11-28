@@ -25,15 +25,33 @@ const wsServer = new ws.WebSocketServer({ server: httpServer });
 /*
     📦 webSocket Server
         - frontSocket : ws서버와 연결된 브라우저(프론트)
-
 */
-wsServer.on("connection", (frontSocket) => {
-  // 브라우저에게 메시지 전송
-  frontSocket.send("브라우저로 보내는 메시지");
 
-  // 브라우저에게 메시지 받기
-  frontSocket.on("message", (msg) => {
-    console.log(msg.toString());
+const fakeDatabase = [];
+// WebSocket 연결 유무
+wsServer.on("connection", (frontSocket) => {
+  frontSocket.name = "익명"; // 브라우저 소켓의 닉네임 설정
+  fakeDatabase.push(frontSocket); // 연결된 브라우저 정보를 DB에 저장
+  console.log("✅ Connect Browser");
+
+  // 🚀 브라우저에게 받은 메시지 처리 함수
+  frontSocket.on("message", (blobMsg) => {
+    // 브라우저에게 받은 메시지 타입 변환
+    const msgToString = blobMsg.toString();
+    const parsedMsg = JSON.parse(msgToString);
+
+    // 브라우저로부터 온 메시지 타입에 따라 실행
+    switch (parsedMsg.type) {
+      case "chat":
+        // 연결된 모든 브라우저에게 메시지 전달
+        fakeDatabase.forEach((socket) => {
+          socket.send(`${frontSocket.name}: ${parsedMsg.text}`);
+        });
+        break;
+      case "name":
+        frontSocket.name = parsedMsg.text;
+        break;
+    }
   });
 });
 
