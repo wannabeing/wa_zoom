@@ -6,25 +6,37 @@ html(lang="en")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         link(rel="stylesheet", href="https://unpkg.com/mvp.css@1.12/mvp.css")
         style.
-            #editBtn {
-                display: none;
+            body {
+                display: flex;
+                flex-direction: column;
+                justfiy-content: center;
+                align-items: center;
             }
-            #chatForm {
+            form {
+                text-align: center;
+            }
+            #chatRoom {
                 display: none;
             }
         
         title WA_ZOOM
     body
         header  
-            h1 WA_ZOOM
+            h1 WA_ZOOM 😎
         main
-            div 
-                ul#chatList
-            form#nameForm(action="", method="get") 
-                input#nameInput(type="text", name="nameInput")
-                button#nameBtn 닉네임 설정
-                button#editBtn 닉네임 수정
-            form#chatForm(action="", method="get", sty) 
-                input#chatInput(type="text", name="chatInput")
-                button 채팅 입력
+            h2#roomTitle
+            div#waitingRoom
+                form#enterForm(action="", method="get") 
+                    h3 와줌 채팅방 
+                    input(type="text", name="enterInput", placeholder="채팅방 이름 입력")
+                    button 채팅방 입장하기
+            div#chatRoom
+                ul 
+                form#chatForm(action="", method="get")                     
+                    h3
+                    input(type="text", name="msgInput", placeholder="메시지 입력")
+                    button 전송
+
+
+    script(src="/socket.io/socket.io.js") <!-- 브라우저에 socketIO 설치 -->      
     script(src="/static/js/index.js")

@@ -1,6 +1,7 @@
 import express from "express";
 import http from "http";
 import ws from "ws";
+import { Server } from "socket.io";
 
 const app = express();
 // static 폴더 세팅
@@ -19,14 +20,32 @@ app.get("/*", (req, res) => {
 
 // express http 서버
 const httpServer = http.createServer(app);
-// express http 서버 기반으로 생성한 webSocket 서버
-const wsServer = new ws.WebSocketServer({ server: httpServer });
+
+// express http 서버 기반으로 생성한 socketIO 서버
+const ioServer = new Server(httpServer);
+
+/*
+    📦 socketIO Server
+    - frontSocket : 서버와 연결된 브라우저(프론트)
+    - onAny : socketIO 이벤트 로그
+    - enterRoom : 채팅방 생성 및 입장 요청 이벤트
+*/
+ioServer.on("connection", (frontSocket) => {
+  frontSocket.onAny((event) => console.log(`🚀 [Event] ${event}`));
+
+  frontSocket.on("enterRoom", (roomName, done) => {
+    frontSocket.join(roomName);
+    done(roomName);
+  });
+});
 
 /*
     📦 webSocket Server
-        - frontSocket : ws서버와 연결된 브라우저(프론트)
-*/
+        - wsServer : express http 서버 기반으로 생성한 webSocket 서버
+        - fakeDatabase : 가짜 데이터베이스
+        - frontSocket : 서버와 연결된 브라우저(프론트)
 
+const wsServer = new ws.WebSocketServer({ server: httpServer });
 const fakeDatabase = [];
 // WebSocket 연결 유무
 wsServer.on("connection", (frontSocket) => {
@@ -54,6 +73,7 @@ wsServer.on("connection", (frontSocket) => {
     }
   });
 });
+*/
 
 // http Server
 httpServer.listen(3000);
