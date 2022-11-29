@@ -26,16 +26,50 @@ const ioServer = new Server(httpServer);
 
 /*
     📦 socketIO Server
+    - connection : 서버와 브라우저가 연결되었을 때
     - frontSocket : 서버와 연결된 브라우저(프론트)
     - onAny : socketIO 이벤트 로그
     - enterRoom : 채팅방 생성 및 입장 요청 이벤트
+    - welcomeMsg : 채팅방 입장 알림 이벤트
+
+    - disconnecting : 채팅방과 연결 끊기기 직전 이벤트
+    - byeMsg : 채팅방 퇴장 알림 이벤트
 */
 ioServer.on("connection", (frontSocket) => {
   frontSocket.onAny((event) => console.log(`🚀 [Event] ${event}`));
 
+  frontSocket.name = "익명";
+
+  // 🚀 setName()
+  frontSocket.on("setName", (editName, done) => {
+    const prevName = frontSocket.name;
+    frontSocket.name = editName;
+    // 🚀 editNameMsg()
+    frontSocket.rooms.forEach((eachRoom) => {
+      frontSocket.to(eachRoom).emit("editNameMsg", prevName, editName);
+    });
+    done();
+  });
+
+  // 🚀 enterRoom()
   frontSocket.on("enterRoom", (roomName, done) => {
-    frontSocket.join(roomName);
-    done(roomName);
+    frontSocket.join(roomName); // 해당 채팅방 입장
+    done(roomName); // 입장 이후 브라우저에게 채팅방 이름을 포함한 제어권 전달
+
+    // 🚀 welcomeMsg()
+    frontSocket.to(roomName).emit("welcomeMsg", frontSocket.name); // 본인 이외에 같은 채팅방 유저에게 id전달
+  });
+  // 🚀 sendChat()
+  frontSocket.on("sendChat", (msg, roomName, done) => {
+    frontSocket.to(roomName).emit("sendChat", msg, frontSocket.name);
+    done(msg);
+  });
+
+  frontSocket.on("disconnecting", () => {
+    // 🚀 byeMsg()
+    frontSocket.rooms.forEach((eachRoom) => {
+      frontSocket.to(eachRoom).emit("byeMsg", frontSocket.name);
+    });
   });
 });
 
