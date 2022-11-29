@@ -2,6 +2,7 @@ import express from "express";
 import http from "http";
 import ws from "ws";
 import { Server } from "socket.io";
+import { instrument } from "@socket.io/admin-ui";
 
 const app = express();
 // static 폴더 세팅
@@ -22,7 +23,16 @@ app.get("/*", (req, res) => {
 const httpServer = http.createServer(app);
 
 // express http 서버 기반으로 생성한 socketIO 서버
-const ioServer = new Server(httpServer);
+const ioServer = new Server(httpServer, {
+  cors: {
+    origin: ["https://admin.socket.io"],
+    credentials: true,
+  },
+});
+// socketIO admin 페이지 설정
+instrument(ioServer, {
+  auth: false,
+});
 
 /*
     📦 socketIO Server
