@@ -48,6 +48,9 @@ html(lang="en")
             #editNameBtn{
                 display: none;
             }
+            #publicRoomList {
+                margin-bottom: 5px;
+            }
             
         title WA_ZOOM
     body
@@ -62,8 +65,11 @@ html(lang="en")
                     button#useNameBtn 사용하기
                     button#editNameBtn(disabled=true) 수정하기(구현중)
             div#waitingRoom
+                
                 form#enterForm(action="", method="get")
-                    h3 와줌 채팅방 
+                    h3 와줌 채팅방 리스트
+                    #publicRoomList 
+                        ul
                     input(type="text", name="enterInput", placeholder="채팅방 이름 입력", maxLength="10" required)
                     button 채팅방 입장하기
             div#chatRoom

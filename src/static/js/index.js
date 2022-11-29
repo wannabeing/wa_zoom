@@ -22,6 +22,7 @@ const chatDiv = document.querySelector("#chatDiv"); // ul태그 감싼 div
 nameForm.addEventListener("submit", (event) => {
   event.preventDefault();
   waitingRoom.style.display = "inline-block";
+  nameForm.style.display = "none";
 
   connectionServer.emit("setName", nameInput.value, () => {
     nameInput.disabled = true;
@@ -29,6 +30,7 @@ nameForm.addEventListener("submit", (event) => {
     editNameBtn.style.display = "inline-block";
   });
 });
+
 /* 닉네임 수정 이벤트 (수정 필요)
 editNameBtn.addEventListener("click", (event) => {
   event.preventDefault();
@@ -38,15 +40,15 @@ editNameBtn.addEventListener("click", (event) => {
   editNameBtn.style.display = "none";
 });
 */
+
 // 🚀 대기실 폼 submit 이벤트: 대기실 -> 채팅방 입장 함수
 enterForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
-  connectionServer.emit("enterRoom", enterInput.value, (roomName) => {
+  connectionServer.emit("enterRoom", enterInput.value, (roomName, count) => {
     chatRoom.style.display = "inline-block";
     waitingRoom.style.display = "none";
-
-    document.querySelector("#roomTitle").innerText = `채팅방: ${roomName}`;
+    setRoomTitle(roomName, count);
   });
 });
 // 🚀 채팅방 폼 usbmit 이벤트: 채팅방 채팅 함수
@@ -71,18 +73,35 @@ chatForm.addEventListener("submit", (event) => {
     - byeMsg : 퇴장 알림
     - sendChat : 채팅 입력
     - editName : 닉네임 변경 알림
+    - changeRoom : 공개방 조회 및 출력
 */
-connectionServer.on("welcomeMsg", (name) => {
+connectionServer.on("welcomeMsg", (name, count) => {
   addMsg(`${name}님이 입장하셨습니다.`);
+  setRoomTitle(name, count);
 });
-connectionServer.on("byeMsg", (name) => {
+connectionServer.on("byeMsg", (name, count) => {
   addMsg(`${name}님이 퇴장하셨습니다.`);
+  setRoomTitle(name, count);
 });
 connectionServer.on("sendChat", (msg, name) => {
   addMsg(`[${name}]: ${msg}`);
 });
 connectionServer.on("editNameMsg", (prevName, editName) => {
   addMsg(`${prevName} -> ${editName} 이름변경`);
+});
+connectionServer.on("changeRoom", (rooms) => {
+  const publicRoomUl = document.querySelector("#publicRoomList");
+  publicRoomUl.innerHTML = "";
+  if (rooms.length === 0) {
+    publicRoomUl.innerHTML = "";
+    return;
+  }
+
+  rooms.forEach((room) => {
+    const publicRoomLi = document.createElement("li");
+    publicRoomLi.innerText = room;
+    publicRoomUl.appendChild(publicRoomLi);
+  });
 });
 /*
     🚀 공통함수
@@ -103,4 +122,9 @@ function addMyMsg(msg) {
   chat.innerText = msg;
   chatList.appendChild(chat);
   chatDiv.scrollTop = chatDiv.scrollHeight; // 채팅 스크롤 항상 아래로
+}
+function setRoomTitle(roomName, count) {
+  document.querySelector(
+    "#roomTitle"
+  ).innerText = `채팅방: ${roomName} (${count})`;
 }
