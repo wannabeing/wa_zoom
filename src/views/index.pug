@@ -62,13 +62,28 @@ html(lang="en")
                 background-color: #e84118;
                 border : none;
             }
-            
-            
+            .circle {
+                display: inline-block;
+                background-color: none;
+                width:10px;
+                height:10px;
+                border-radius: 50%;
+                -webkit-border-radius: 50%;
+                -moz-border-radius: 50%;
+                border: 2px solid #fff;
+                border-color:white;
+                cursor: pointer;
+            }
+            .flex-active {
+                border: 3px solid #fff;
+            }
         title WA_ZOOM
     body
         header
+            //- .circle.circle1
+            
             h1 WA_ZOOM 😎
-        
+            //- .circle.circle2
             h2#roomTitle
             div#waitingRoom
                 form#enterForm(action="", method="get")
@@ -93,5 +108,6 @@ html(lang="en")
                     #chatBtnDiv
                         button 메시지 전송
                         button#exitRoomBtn 나가기
-    script(src="/socket.io/socket.io.js") <!-- 브라우저에 socketIO 설치 -->      
+    script(src="/socket.io/socket.io.js") <!-- 브라우저에 socketIO 설치 -->
     script(src="/static/js/index.js")
+    

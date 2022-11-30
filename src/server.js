@@ -15,6 +15,9 @@ app.set("views", __dirname + "/views");
 app.get("/", (req, res) => {
   res.render("index");
 });
+app.get("/video", (req, res) => {
+  res.render("video");
+});
 app.get("/*", (req, res) => {
   res.redirect("/");
 });

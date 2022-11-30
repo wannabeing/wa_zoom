@@ -124,3 +124,15 @@ function setRoomTitle(roomName, count) {
     "#roomTitle"
   ).innerText = `채팅방: ${roomName} (${count})`;
 }
+
+// $(".circle1, .circle2").click(function () {
+//   var $this = $(this);
+
+//   if ($this.hasClass("circle1")) {
+//     $this.addClass("flex-active");
+//     $(".circle2").removeClass("flex-active");
+//   } else {
+//     $this.addClass("flex-active");
+//     $(".circle1").removeClass("flex-active");
+//   }
+// });

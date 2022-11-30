@@ -1,0 +1,24 @@
+doctype html
+html(lang="en")
+    head
+        meta(charset="UTF-8")
+        meta(http-equiv="X-UA-Compatible", content="IE=edge")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        link(rel="stylesheet", href="https://unpkg.com/mvp.css@1.12/mvp.css")
+        title WA_ZOOM VIDEO
+        style. 
+            #muteBtn {
+                display: none;
+            }
+    body
+        header 
+            h1 WA_ZOOM VIDEO 😎
+        main 
+            #streamContainer 
+                select#selectedVideo
+                video#streamVideo(width="400", height="400",autoplay, playsinline)
+                button#camBtn 카메라 켜기
+                button#muteBtn 음소거
+                
+    script(src="/socket.io/socket.io.js") <!-- 브라우저에 socketIO 설치 -->
+    script(src="/static/js/videoApp.js")
