@@ -34,25 +34,13 @@ instrument(ioServer, {
   auth: false,
 });
 
-/*
-    📦 socketIO Server
-    - connection : 서버와 브라우저가 연결되었을 때
-        frontSocket : 서버와 연결된 브라우저(프론트) 변수
-        onAny : socketIO 이벤트 로그
-        enterRoom : 채팅방 생성 및 입장 요청 이벤트
-        welcomeMsg : 채팅방 입장 알림 이벤트
-
-    - disconnecting : 채팅방과 연결 끊기기 직전 이벤트
-        byeMsg : 채팅방 퇴장 알림 이벤트
-    - disconnect : 채팅방과 연결이 끊어진 이후 이벤트
-        changeRoom : 공개방 조회 함수
-*/
-
 /* 
-    🚀 공개방만 구하는 함수
+    🚀 getPublicRooms(): 공개방만 구하는 함수
         sids: 서버와 연결된 socket ID 리스트
         rooms: 생성된 채팅방 리스트 (개인방 포함)
         publicRooms : 유저가 직접 생성한 채팅방 리스트 (공개방만)
+    
+     🚀 getCount() : 해당 공개방의 인원수 구하는 함수
 */
 function getPublicRooms() {
   const { sids, rooms } = ioServer.sockets.adapter;
@@ -64,17 +52,20 @@ function getPublicRooms() {
   });
   return publicRooms;
 }
-/*
-    🚀 해당 공개방의 인원수 구하는 함수
-*/
 function getCount(roomName) {
   return ioServer.sockets.adapter.rooms.get(roomName)?.size;
 }
 
+/*
+    📦 socketIO Server
+    - connection : 서버와 브라우저가 연결되었을 때
+    - disconnecting : 채팅방과 연결 끊기기 직전 이벤트
+    - disconnect : 채팅방과 연결이 끊어진 이후 이벤트
+*/
 ioServer.on("connection", (frontSocket) => {
   frontSocket.onAny((event) => console.log(`🚀 [Event] ${event}`));
+  frontSocket.name = "익명"; // 초기 닉네임 설정
 
-  frontSocket.name = "익명";
   // 🚀 changeRoom()
   ioServer.sockets.emit("changeRoom", getPublicRooms());
 
@@ -101,6 +92,7 @@ ioServer.on("connection", (frontSocket) => {
     // 🚀 changeRoom()
     ioServer.sockets.emit("changeRoom", getPublicRooms());
   });
+
   // 🚀 sendChat()
   frontSocket.on("sendChat", (msg, roomName, done) => {
     frontSocket.to(roomName).emit("sendChat", msg, frontSocket.name);
