@@ -6,19 +6,75 @@ html(lang="en")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         link(rel="stylesheet", href="https://unpkg.com/mvp.css@1.12/mvp.css")
         title WA_ZOOM VIDEO
-        style. 
-            #muteBtn {
+        style.
+            main {
+                display: flex;
+                flex-direction: column;
+                justify-content:center;
+                align-items: center;
+            }
+            .formContainer form {
+                display: flex;
+                flex-direction: column;
+                justify-content:center;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+            .loading {
                 display: none;
+                position: absolute; 
+            }
+            .showing {
+                max-width:500px;
+                position: relative;
+                display: none;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding: 10px;
+                border: 2px solid black;
+                border-radius: 7px;
+            }
+            .showing video {
+                padding: 10px;
+                border-top: 2px solid black; 
+                border-bottom: 2px solid black;
+                margin-bottom: 10px;
+            }
+            .btnContainer {
+                display: flex;
+                justify-content: space-around;
+                width: 100%;
+            }
+            .btnContainer .btn {
+                width: 20px;
+                padding: 10px;
+                background: white;
+                border : 2px solid black;
+                border-radius: 50%;
+                cursor: pointer;
+            }
+            .btnContainer .btn:hover{
+                border: 2px solid #0E8BEE;
             }
     body
         header 
             h1 WA_ZOOM VIDEO 😎
-        main 
-            #streamContainer 
-                select#selectedVideo
-                video#streamVideo(width="400", height="400",autoplay, playsinline)
-                button#camBtn 카메라 켜기
-                button#muteBtn 음소거
-                
+        main
+            .formContainer
+                form#enterForm(action="", method="get")
+                    h3 와줌 채팅방 리스트
+                    #publicRoomList 
+                        ul
+                    input(type="text", name="enterInput", placeholder="채팅방 이름 입력", maxLength="10" required)
+                    button 채팅방 입장하기
+            .showing
+                select    
+                video(width="300", height="200",autoplay, playsinline)
+                .btnContainer
+                    img.btn#camBtn(src="static/images/cam-off.png", alt="카메라 버튼")
+                    img.btn#muteBtn(src="static/images/mute-icon.png", alt="마이크 버튼")
+                .loading
+                    include partials/loading.pug
     script(src="/socket.io/socket.io.js") <!-- 브라우저에 socketIO 설치 -->
     script(src="/static/js/videoApp.js")

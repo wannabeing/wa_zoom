@@ -69,6 +69,20 @@ ioServer.on("connection", (frontSocket) => {
   frontSocket.onAny((event) => console.log(`🚀 [Event] ${event}`));
   frontSocket.name = "익명"; // 초기 닉네임 설정
 
+  // 🎥 [Video] Entered: 입장
+  frontSocket.on("entered", (roomName, done) => {
+    frontSocket.join(roomName);
+    done();
+
+    // 🎥 [Video] Other Entered: 상대방 입장
+    frontSocket.to(roomName).emit("otherEntered");
+  });
+  // 🖱 [webRTC] sendOffer: 상대방에게 초대장 전달
+  frontSocket.on("sendOffer", (offer, roomName) => {
+    console.log("네 다시 오퍼 드가요");
+    frontSocket.to(roomName).emit("getOffer", offer);
+  });
+
   // 🚀 changeRoom()
   ioServer.sockets.emit("changeRoom", getPublicRooms());
 
