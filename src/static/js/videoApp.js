@@ -2,20 +2,22 @@ const connectionServer = io();
 
 // Conatiner
 const formContainer = document.querySelector(".formContainer"); // [form Container]
-const showing = document.querySelector(".showing"); // [showing Container]
+const myContainer = document.querySelector("#myContainer"); // [my Container]
 const loadingContainer = document.querySelector(".loading"); // [loading Container]
 const btnContainer = document.querySelector(".btnContainer");
 
 const myForm = formContainer.querySelector("form"); // [form]
 const myInput = myForm.querySelector("input"); // [input]
-const myVideo = showing.querySelector("video"); // [video]
-const mySelect = showing.querySelector("select"); // [select]
+const myVideo = myContainer.querySelector("video"); // [video]
+const mySelect = myContainer.querySelector("select"); // [select]
 const muteBtn = btnContainer.querySelector("#muteBtn"); // [btn]
 const camBtn = btnContainer.querySelector("#camBtn"); // [btn]
 
-let myStream; // [myStream]: video,audio가 결합된 정보
+/** @type {RTCPeerConnection} */
 let myPeer; // [myPeer]: 상대방에게 전달할 나의 스트림 정보
-let roomName; // [roomName]: 채팅방 이름
+
+let myStream; // [myStream]: video,audio가 결합된 정보
+let roomName; // [roomName]: 채팅방 이름 저장
 let muteState = false; // [default]: audio unmuted
 let camState = true; // [default]: camera on
 
@@ -71,13 +73,16 @@ async function getStream(deviceId) {
 // 🚀 [fn] 폼 숨기고, 쇼 컨테이너 보여주기 & 유저 스트림 정보 얻기 & webRTC 설정
 async function setShowing() {
   formContainer.style.display = "none";
-  showing.style.display = "flex";
+  document.querySelectorAll(".showing").forEach((showing) => {
+    showing.style.display = "flex";
+  });
   await getStream();
   setWebRTC();
 }
 
 // 🖱 [click] 음소거 버튼 클릭
 muteBtn.addEventListener("click", () => {
+  console.log(myStream.getAudioTracks());
   myStream.getAudioTracks().forEach((audio) => {
     audio.enabled = !audio.enabled;
   });
@@ -112,7 +117,17 @@ camBtn.addEventListener("click", () => {
 });
 // 🖱 [click] 카메라 변경 버튼 클릭
 mySelect.addEventListener("input", async () => {
-  await getStream(mySelect.value);
+  await getStream(mySelect.value); // 선택한 비디오 정보로 변경
+
+  // 상대방과 연결이 되어 있다면
+  if (myPeer) {
+    const selectedVideo = myStream.getVideoTracks()[0]; // [selectedVideo]: 내가 선택한 비디오 정보
+    const videoSender = myPeer
+      .getSenders()
+      .find((sender) => sender.track.kind === "video"); // [videoSender]: 상대방 화면에서 보이는 나의 비디오 정보
+    // 상대방화면의 나의 비디오 정보 변경
+    videoSender.replaceTrack(selectedVideo);
+  }
 });
 
 // 🖱 [loading] 로딩 컴포넌트 함수
@@ -126,33 +141,86 @@ function setCompleted() {
 /*
     -------------- 🌟 socketIO --------------
 */
-
 // 🖱 [submit] 채팅방 폼 제출
-myForm.addEventListener("submit", (event) => {
+myForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+  // 🖱 myStream 가져와서 myPeer에 저장
+  await setShowing();
   // ✅ socketIO START
-  connectionServer.emit("entered", myInput.value, setShowing);
+  connectionServer.emit("entered", myInput.value);
   roomName = myInput.value;
   myInput.value = "";
 });
-// 🖱 [otehrEntered]: 다른사람이 입장했을 때
+
+// ➡️ [A에서 실행 - otehrEntered]: 상대방(B)이 입장했을 때
 connectionServer.on("otherEntered", async () => {
-  const myOffer = await myPeer.createOffer(); // [myOffer]: 다른사람에게 보낼 초대장
-  myPeer.setLocalDescription(myOffer);
-  // 🖱 [sendOffer]: 상대에게 오퍼 전송
+  const myOffer = await myPeer.createOffer(); // [myOffer]: 상대방(B)에게 보낼 초대장
+  console.log("send offer");
+  myPeer.setLocalDescription(myOffer); // 나(A)의 오퍼를 세팅
+  // ➡️ [sendOffer]: 내(A)가 상대방(B)에게 오퍼 전송
   connectionServer.emit("sendOffer", myOffer, roomName);
 });
-// 🖱 [getOffer]: 상대의 오퍼 받기
-connectionServer.on("getOffer", (receivedOffer) => {
-  console.log(receivedOffer);
+
+// ⬅️ [B에서 실행 - getOffer]: 내(B)가 상대방(A)의 오퍼 받기
+connectionServer.on("getOffer", async (receivedOffer) => {
+  myPeer.setRemoteDescription(receivedOffer); // 상대방(A)에게 받은 오퍼를 나(B)에게 세팅
+  console.log("get offer");
+  const myAnswer = await myPeer.createAnswer(); // [myAnswer]: 상대방(A)에게 보낼 답장
+  myPeer.setLocalDescription(myAnswer); // 나(B)의 답장을 세팅
+  console.log("send answer");
+  // ⬅️ [sendAnswer]: 내(B)가 상대방(A)에게 답장 전송
+  connectionServer.emit("sendAnswer", myAnswer, roomName);
+});
+
+// ➡️ [A에서 실행 - getAnswer]: 내(A)가 상대방(B)의 답장 받기
+connectionServer.on("getAnswer", (receivedAnswer) => {
+  console.log("get answer");
+  myPeer.setRemoteDescription(receivedAnswer); // 상대방(B)에게 받은 답장을 나(A)에게 세팅
+});
+
+// ❄️ [getIce] : 상대방의 소통방법(receivedIce)을 나(myPeer)에게 저장
+connectionServer.on("getIce", (receivedIce) => {
+  console.log("get icecandidate");
+  myPeer.addIceCandidate(receivedIce);
 });
 
 /*
     -------------- 🌟 webRTC --------------
 */
 function setWebRTC() {
-  myPeer = new RTCPeerConnection();
-  // 브라우저에 나의 스트림정보 추가
+  myPeer = new RTCPeerConnection({
+    iceServers: [
+      { urls: ["stun:ntk-turn-1.xirsys.com"] },
+      {
+        username:
+          "Bq_h0nI-LRmH5C5Dn8d7S_aIj6JPbVkDRfZmBmd73lsfIKSVrJiN99hlQ1T8boziAAAAAGOTQkxjaG9paHl1aw==",
+        credential: "838ad558-77cb-11ed-b9b2-0242ac120004",
+        urls: [
+          "turn:ntk-turn-1.xirsys.com:80?transport=udp",
+          "turn:ntk-turn-1.xirsys.com:3478?transport=udp",
+          "turn:ntk-turn-1.xirsys.com:80?transport=tcp",
+          "turn:ntk-turn-1.xirsys.com:3478?transport=tcp",
+          "turns:ntk-turn-1.xirsys.com:443?transport=tcp",
+          "turns:ntk-turn-1.xirsys.com:5349?transport=tcp",
+        ],
+      },
+    ],
+  });
+
+  // ❄️ [sendIce] : 나의 소통방법(data.candidate)을 상대방에게 전송
+  myPeer.addEventListener("icecandidate", (data) => {
+    console.log("send icecandidate");
+    connectionServer.emit("sendIce", data.candidate, roomName);
+  });
+
+  // 상대방과 연결 되었을 때 (상대의 스트림정보가 생겼을 때)
+  myPeer.addEventListener("track", (peerData) => {
+    console.log("연결!");
+    const peerVideo = document.querySelector("#peerContainer video");
+    peerVideo.srcObject = peerData.streams[0];
+  });
+
+  // myPeer에 나의 스트림정보 추가
   myStream.getTracks().forEach((track) => {
     myPeer.addTrack(track, myStream);
   });

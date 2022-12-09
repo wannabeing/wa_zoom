@@ -25,7 +25,6 @@ html(lang="en")
                 position: absolute; 
             }
             .showing {
-                max-width:500px;
                 position: relative;
                 display: none;
                 flex-direction: column;
@@ -36,6 +35,8 @@ html(lang="en")
                 border-radius: 7px;
             }
             .showing video {
+                width: 100%;
+                max-width:640px;
                 padding: 10px;
                 border-top: 2px solid black; 
                 border-bottom: 2px solid black;
@@ -68,7 +69,7 @@ html(lang="en")
                         ul
                     input(type="text", name="enterInput", placeholder="채팅방 이름 입력", maxLength="10" required)
                     button 채팅방 입장하기
-            .showing
+            #myContainer.showing
                 select    
                 video(width="300", height="200",autoplay, playsinline)
                 .btnContainer
@@ -76,5 +77,14 @@ html(lang="en")
                     img.btn#muteBtn(src="static/images/mute-icon.png", alt="마이크 버튼")
                 .loading
                     include partials/loading.pug
+            #peerContainer.showing
+                video(width="300", height="200",autoplay, playsinline)
+                .btnContainer
+                    img.btn#camBtn(src="static/images/cam-off.png", alt="카메라 버튼")
+                    img.btn#muteBtn(src="static/images/mute-icon.png", alt="마이크 버튼")
+                .loading
+                    include partials/loading.pug
+                
+                
     script(src="/socket.io/socket.io.js") <!-- 브라우저에 socketIO 설치 -->
     script(src="/static/js/videoApp.js")

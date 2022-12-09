@@ -70,17 +70,27 @@ ioServer.on("connection", (frontSocket) => {
   frontSocket.name = "익명"; // 초기 닉네임 설정
 
   // 🎥 [Video] Entered: 입장
-  frontSocket.on("entered", (roomName, done) => {
+  frontSocket.on("entered", (roomName) => {
     frontSocket.join(roomName);
-    done();
-
     // 🎥 [Video] Other Entered: 상대방 입장
     frontSocket.to(roomName).emit("otherEntered");
   });
-  // 🖱 [webRTC] sendOffer: 상대방에게 초대장 전달
+
+  // ➡️ [webRTC] sendOffer: 상대방(B)에게 초대장 전달
   frontSocket.on("sendOffer", (offer, roomName) => {
-    console.log("네 다시 오퍼 드가요");
+    // ⬅️ [webRTC] getOffer: 상대방(A)으로부터 초대장 받기
     frontSocket.to(roomName).emit("getOffer", offer);
+  });
+  // ➡️ [webRTC] sendAnswer: 상대방(A)에게 답장 전달
+  frontSocket.on("sendAnswer", (answer, roomName) => {
+    // ⬅️ [webRTC] getAnswer: 상대방(B)으로부터 답장 받기
+    frontSocket.to(roomName).emit("getAnswer", answer);
+  });
+
+  // ❄️ [Video] sendIce: 나의 소통 방법을 상대방에게 전송
+  frontSocket.on("sendIce", (iceCandidate, roomName) => {
+    // ❄️ [Video] getIce: 상대방의 소통 방법을 나에게 저장
+    frontSocket.to(roomName).emit("getIce", iceCandidate);
   });
 
   // 🚀 changeRoom()
