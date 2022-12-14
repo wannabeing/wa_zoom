@@ -12,6 +12,7 @@ html(lang="en")
                 flex-direction: column;
                 justify-content:center;
                 align-items: center;
+                max-width: 640px;
             }
             .formContainer form {
                 display: flex;
@@ -22,7 +23,8 @@ html(lang="en")
             }
             .loading {
                 display: none;
-                position: absolute; 
+                position: absolute;
+                border-radius: 50%;
             }
             .showing {
                 position: relative;
@@ -33,8 +35,10 @@ html(lang="en")
                 padding: 10px;
                 border: 2px solid black;
                 border-radius: 7px;
+                margin-bottom: 25px;
             }
-            .showing video {
+            .showing #peerVideo {
+                position: relative;
                 width: 100%;
                 max-width:640px;
                 padding: 10px;
@@ -46,8 +50,10 @@ html(lang="en")
                 display: flex;
                 justify-content: space-around;
                 width: 100%;
+                z-index: 1;
+                margin-bottom: 10px;
             }
-            .btnContainer .btn {
+            .btn {
                 width: 20px;
                 padding: 10px;
                 background: white;
@@ -55,9 +61,31 @@ html(lang="en")
                 border-radius: 50%;
                 cursor: pointer;
             }
-            .btnContainer .btn:hover{
+            .btn:hover{
                 border: 2px solid #0E8BEE;
             }
+            #myContainer {
+                position: absolute;
+                bottom: 23%;
+                right: 45px;
+            }
+            .msgForm{
+                bottom: 0;
+                height: 30px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+            }
+            .msgForm input {
+                width: 70%;
+                margin: 0;
+            }
+            .msgForm button {
+                padding:5px;
+                font-size: 12px;
+            }
+            
     body
         header 
             h1 WA_ZOOM VIDEO 😎
@@ -69,21 +97,25 @@ html(lang="en")
                         ul
                     input(type="text", name="enterInput", placeholder="채팅방 이름 입력", maxLength="10" required)
                     button 채팅방 입장하기
-            #myContainer.showing
-                select    
-                video(width="300", height="200",autoplay, playsinline)
-                .btnContainer
-                    img.btn#camBtn(src="static/images/cam-off.png", alt="카메라 버튼")
-                    img.btn#muteBtn(src="static/images/mute-icon.png", alt="마이크 버튼")
-                .loading
-                    include partials/loading.pug
-            #peerContainer.showing
-                video(width="300", height="200",autoplay, playsinline)
-                .btnContainer
-                    img.btn#camBtn(src="static/images/cam-off.png", alt="카메라 버튼")
-                    img.btn#muteBtn(src="static/images/mute-icon.png", alt="마이크 버튼")
-                .loading
-                    include partials/loading.pug
+            div
+                #peerContainer.showing
+                    select    
+                    video#peerVideo(width="300", height="200",autoplay, playsinline)
+                    #myContainer
+                        video#myVideo(width="100", height="75", autoplay, playsinline)
+                    .btnContainer
+                        img.btn#camBtn(src="static/images/cam-off.png", alt="카메라 버튼")
+                        img.btn#muteBtn(src="static/images/mute-icon.png", alt="마이크 버튼")
+                    .loading
+                        include partials/loading.pug
+                #chatContainer.showing
+                    h3 채팅창
+                    #chatRoom
+                    form.msgForm
+                        input#msgInput(type="text", name="msgInput", placeholder="메시지를 입력해주세요.", maxLength="10" required)
+                        button 전송
+        
+
                 
                 
     script(src="/socket.io/socket.io.js") <!-- 브라우저에 socketIO 설치 -->
