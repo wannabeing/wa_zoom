@@ -14,6 +14,7 @@ const mySelect = peerContainer.querySelector("select"); // [select]
 const muteBtn = btnContainer.querySelector("#muteBtn"); // [btn]
 const camBtn = btnContainer.querySelector("#camBtn"); // [btn]
 const chatRoom = chatContainer.querySelector("#chatRoom"); // [div]
+const chatList = chatContainer.querySelector("ul"); // [ul]
 const chatForm = chatContainer.querySelector("form"); // [form]
 const chatInput = chatContainer.querySelector("input"); // [input]
 const chatBtn = chatContainer.querySelector("button"); // [btn]
@@ -138,7 +139,9 @@ mySelect.addEventListener("input", async () => {
 // 🖱 [click] 메시지 전송 버튼 클릭
 chatBtn.addEventListener("click", (event) => {
   event.preventDefault();
-
+  const msg = chatInput.value;
+  pingpongChat(msg, true); // 메시지 전송
+  myDataChannel.send(msg);
   chatInput.value = "";
 });
 // 🖱 [loading] 로딩 컴포넌트 함수
@@ -149,19 +152,15 @@ function setCompleted() {
   loadingContainer.style.display = "none";
 }
 
-function sendChat(msg, who) {
-  console.log(who);
-  const chatSpan = document.createElement("span");
-  chatSpan.classList.add("myChat");
-  chatSpan.innerText = msg;
-  chatRoom.appendChild(chatSpan);
-}
-function receivedChat(msg, who) {
-  console.log(who);
-  const chatSpan = document.createElement("span");
-  chatSpan.classList.add("peerChat");
-  chatSpan.innerText = msg;
-  chatRoom.appendChild(chatSpan);
+// 📞 [DataChannel] 채팅 관련 함수
+function pingpongChat(msg, isSend) {
+  const li = document.createElement("li");
+  const span = document.createElement("span");
+  li.classList.add(isSend ? "myChat" : "peerChat");
+  span.innerText = msg;
+  li.appendChild(span);
+  chatList.appendChild(li);
+  chatRoom.scrollTop = chatRoom.scrollHeight;
 }
 
 /*
@@ -180,11 +179,11 @@ myForm.addEventListener("submit", async (event) => {
 
 // ➡️ [A에서 실행 - otehrEntered]: 상대방(B)이 입장했을 때
 connectionServer.on("otherEntered", async () => {
-  myDataChannel = myPeer.createDataChannel("chat"); // [myDataChannel]: 상대방(B)과 소통할 데이터채널 생성
-  myDataChannel.addEventListener("message", (event) => {
-    console.log("send", event.data);
+  myDataChannel = myPeer.createDataChannel("chat"); // [📞 myDataChannel]: 상대방(B)과 소통할 데이터채널 생성
+  // [📞 myDataChannel]: 상대방(B)에게 메시지를 받았을 때
+  myDataChannel.addEventListener("message", (msg) => {
+    pingpongChat(msg.data);
   });
-
   const myOffer = await myPeer.createOffer(); // [myOffer]: 상대방(B)에게 보낼 초대장
   console.log("send offer");
   myPeer.setLocalDescription(myOffer); // 나(A)의 오퍼를 세팅
@@ -194,10 +193,13 @@ connectionServer.on("otherEntered", async () => {
 
 // ⬅️ [B에서 실행 - getOffer]: 내(B)가 상대방(A)의 오퍼 받기
 connectionServer.on("getOffer", async (receivedOffer) => {
-  myPeer.addEventListener("datachannel", (event) => {
-    myDataChannel = event.channel;
-    myDataChannel.addEventListener("message", (event) => {
-      console.log(event.data);
+  // [📞 DataChannel] 연결
+  myPeer.addEventListener("datachannel", (data) => {
+    myDataChannel = data.channel; // [📞 myDataChannel]: 상대방(A)과 소통할 데이터채널 생성
+    // [📞 myDataChannel]: 상대방(A)에게 메시지를 받았을 때
+    myDataChannel.addEventListener("message", (msg) => {
+      // 상대방(A)에게 메시지를 받았을 때
+      pingpongChat(msg.data);
     });
   });
 

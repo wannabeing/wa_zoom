@@ -71,6 +71,7 @@ html(lang="en")
             }
             .msgForm{
                 bottom: 0;
+                width: auto;
                 height: 30px;
                 display: flex;
                 justify-content: center;
@@ -82,10 +83,49 @@ html(lang="en")
                 margin: 0;
             }
             .msgForm button {
-                padding:5px;
+                padding: 5px;
                 font-size: 12px;
+                margin-left: 5px;
             }
-            
+            #chatRoom {
+                width: 100%;
+                height: 200px;
+                font-size: 11px;
+                overflow-y: auto;
+                background: #f5f6fa;
+                border-radius: 7px;
+                margin-bottom: 10px;
+            }
+            #chatRoom ul {
+                display: flex;
+                flex-direction: column;
+                padding: 0;
+            }
+            #chatRoom li {
+                display: flex;
+                list-style-type: none;
+            }
+            #chatRoom span {
+                border: none;
+                border-radius: 7px;
+                padding: 8px;
+                margin: 3px;
+                color: white;
+                font-weight: bold;
+            }
+            .myChat {
+                justify-content: end;
+                margin-right: 10px;
+            }
+            .peerChat{
+                justify-content: start;
+            }
+            .myChat span {
+                background: #0E8BEE;
+            }
+            .peerChat span {
+                background: #353b48;
+            }
     body
         header 
             h1 WA_ZOOM VIDEO 😎
@@ -111,6 +151,7 @@ html(lang="en")
                 #chatContainer.showing
                     h3 채팅창
                     #chatRoom
+                        ul
                     form.msgForm
                         input#msgInput(type="text", name="msgInput", placeholder="메시지를 입력해주세요.", maxLength="10" required)
                         button 전송
